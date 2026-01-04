@@ -25,6 +25,9 @@ bw = cv2.adaptiveThreshold(
 
 h, w = bw.shape
 
+
+
+
 # -------------------------
 # HORIZONTAL LINE DETECTION
 # -------------------------
@@ -41,7 +44,7 @@ for i in range(1, num_labels):
     width = stats[i, cv2.CC_STAT_WIDTH]
     area = stats[i, cv2.CC_STAT_AREA]
 
-    if width > w * 0.45 and area > 800:
+    if width > w * 0.30 and area > 800:
         clean_horizontal[labels == i] = 255
 
 # Remove bottom-most horizontal line (footer)
@@ -66,8 +69,9 @@ for i in range(1, num_labels):
     height = stats[i, cv2.CC_STAT_HEIGHT]
     area = stats[i, cv2.CC_STAT_AREA]
 
-    if height > h * 0.45 and area > 800:
+    if height > h * 0.25 and area > 800:
         clean_vertical[labels == i] = 255
+
 
 # -------------------------
 # FINAL GRID
@@ -83,4 +87,7 @@ plt.title("Detected Grid Lines")
 plt.axis("off")
 
 # This blocks execution until you close the window
-plt.show()
+# plt.show()
+plt.show(block=False)   # non-blocking
+plt.pause(1.0)          # show for 1 second
+plt.close()             # close window

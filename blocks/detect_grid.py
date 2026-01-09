@@ -1,13 +1,41 @@
-import cv2
-import numpy as np
 import os
+import cv2
+import sys
+import numpy as np
+import matplotlib.pyplot as plt
 
-
-def process_img(path):
-    # Read image
-    img = cv2.imread(path)
+def get_grey_cv2_img(img_path: str):
+    img = cv2.imread(img_path)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return gray
 
+def get_grid_from_grey_img(img):
+    # ------------------ HARD NORMALIZATION ------------------
+    if img is None:
+        raise ValueError("process_img received None")
+
+    if not isinstance(img, np.ndarray):
+        raise TypeError(f"Expected numpy array, got {type(img)}")
+
+    # Convert to grayscale if needed
+    if img.ndim == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = img
+
+    # Force uint8 (THIS IS THE KEY FIX)
+    if gray.dtype != np.uint8:
+        gray = gray.astype(np.uint8)
+
+
+    bw = cv2.adaptiveThreshold(
+        gray,
+        255,
+        cv2.ADAPTIVE_THRESH_MEAN_C,
+        cv2.THRESH_BINARY_INV,
+        25,
+        10
+    )
     # Adaptive threshold
     bw = cv2.adaptiveThreshold(
         gray, 255,
@@ -66,19 +94,39 @@ def process_img(path):
     # -------------------------
     grid = cv2.bitwise_or(clean_horizontal, clean_vertical)
 
-    # # -------------------------
-    # # DISPLAY USING MATPLOTLIB
-    # # -------------------------
-    # plt.figure(figsize=(10, 14))
-    # plt.imshow(grid, cmap="gray")
-    # plt.title("Detected Grid Lines")
-    # plt.axis("off")         # close window
+    return grid
 
-    filename = os.path.basename(path)
-    output_path = os.path.join("../data/output", filename)
+def show_matplot_img(img):
+        # # -------------------------
+    # DISPLAY USING MATPLOTLIB
+    # -------------------------
+    plt.figure(figsize=(10, 14))
+    plt.imshow(img, cmap="gray")
+    plt.title("Detected Grid Lines")
+    plt.axis("off")
+    plt.show()
 
-    # print(output_path)
+def save_image(img_path: str, img_name: str, np_img):
+    filename = os.path.basename(img_name)
+    os.makedirs(img_path, exist_ok=True)
+    output_path = os.path.join(img_path, filename)
+    cv2.imwrite(output_path, np_img)
 
-    # plt.savefig(output_path, bbox_inches="tight", pad_inches=0)
-    # plt.close()
-    cv2.imwrite(output_path, grid)
+if __name__ == "__main__":
+    img_path = "../data/BoothVoterList_A4_Ward_9_Booth_1_img001.jpg"
+
+    if not os.path.exists(img_path):
+        print("No Img found")
+        sys.exit(1)
+
+    #Get grey image
+    grey_img = get_grey_cv2_img(img_path)
+
+    #detect Grid
+    grid_img = get_grid_from_grey_img(grey_img)
+
+    #Show Image
+    show_matplot_img(grid_img)
+
+    #Save the image to desired file path
+    save_image("../data/output/", "detected_grid.jpg", grid_img)

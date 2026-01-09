@@ -1,0 +1,2 @@
+sudo apt install tesseract-ocr tesseract-ocr-mar
+pip install pytesseract opencv-python pandas openpyxl pillow

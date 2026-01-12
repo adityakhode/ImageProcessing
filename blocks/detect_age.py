@@ -1,65 +1,65 @@
 import cv2
-import pytesseract
+import os
+from split_numbers import split_img, resize
+from skimage.metrics import structural_similarity as ssim
 
-def detect_number(img):
-    h, w = img.shape[:2]
+TEMPLATE_DIR = "../digits/templates/"
+STANDARD_SIZE = 64   # single int is easier for centering
 
-    # ROI percentages
-    x1 = int(0.088 * w)   # left
-    x2 = int(0.16  * w)   # right
-    y1 = int(0.83  * h)   # top
-    y2 = int(0.96  * h)   # bottom
-    img = img[y1:y2, x1:x2]
-        # grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+def load_templates():
+    templates = {}
+    for i in range(10):
+        path = os.path.join(TEMPLATE_DIR, f"{i}.png")
+        img = cv2.imread(path, cv2.IMREAD_GRAYSCALE) 
+        if img is None:
+            raise RuntimeError(f"Template missing: {path}")
+        templates[i] = img
+    return templates
 
-    # binarize
-    _, bin_img = cv2.threshold(
-        gray, 0, 255,
-        cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    )
+TEMPLATES = load_templates()
 
-    # slight dilation (important)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-    bin_img = cv2.dilate(bin_img, kernel, iterations=1)
+def detect_age(img):
+    age = ""
 
-    # resize to separate digits
-    bin_img = cv2.resize(
-        bin_img,
-        None,
-        fx=2.0,
-        fy=1.5,
-        interpolation=cv2.INTER_CUBIC
-    )
+    images = split_img(img)
+    confidence_score_avg = 0
+    for image in (images):
+        digit, confidence = detect_digit(resize(image))
+        if confidence < 0.7:
+            return 0, confidence
+        confidence_score_avg += confidence
+        age = age + str(digit)
+    return int(age), confidence_score_avg/2
 
-    # OCR
-    config = "--psm 6 -c tessedit_char_whitelist=0०१२३४५६७८९"
+def detect_digit(img):
+    best_score = -1
+    best_digit = None
 
-    raw = pytesseract.image_to_string(
-        bin_img,
-        lang="hin",
-        config=config
-    )
-    # age = raw.split("\n")[2]
-    age = raw.split("\n")[0]
+    for digit, template in TEMPLATES.items():
+        score = ssim(img, template)
+
+        if score > best_score:
+            best_score = score
+            best_digit = digit
+
+    return best_digit, best_score
+
+
+if __name__ == "__main__":
+    path = "../data/output/number17.jpg"
+    img = cv2.imread(path)
+    age = detect_age(img)
     print(age)
-    hindi_to_english_numbers = {
-        "२१": 21, "२२": 22, "२३": 23, "२४": 24, "२५": 25,
-        "२६": 26, "२७": 27, "२८": 28, "२९": 29, "३०": 30,
-        "३१": 31, "३२": 32, "३३": 33, "३४": 34, "३५": 35,
-        "३६": 36, "३७": 37, "३८": 38, "३९": 39, "४०": 40,
-        "४१": 41, "४२": 42, "४३": 43, "४४": 44, "४५": 45,
-        "४६": 46, "४७": 47, "४८": 48, "४९": 49, "५०": 50,
-        "५१": 51, "५२": 52, "५३": 53, "५४": 54, "५५": 55,
-        "५६": 56, "५७": 57, "५८": 58, "५९": 59, "६०": 60,
-        "६१": 61, "६२": 62, "६३": 63, "६४": 64, "६५": 65,
-        "६६": 66, "६७": 67, "६८": 68, "६९": 69, "७०": 70,
-        "७१": 71, "७२": 72, "७३": 73, "७४": 74, "७५": 75,
-        "७६": 76, "७७": 77, "७८": 78, "७९": 79, "८०": 80,
-        "८१": 81, "८२": 82, "८३": 83, "८४": 84, "८५": 85,
-        "८६": 86, "८७": 87, "८८": 88, "८९": 89, "९०": 90,
-        "९१": 91, "९२": 92, "९३": 93, "९४": 94, "९५": 95,
-        "९६": 96, "९७": 97, "९८": 98, "९९": 99, "१००": 100
-    }
+    # images = detect_age(img)
+    
+    # count = 0
+    # for i, image in enumerate(images):
+    #     digit, confidence = detect_digit(image)
+    #     cv2.imshow(f"{digit}", image)
+    #     cv2.waitKey(3000)
+    #     cv2.imwrite(f"../data/output/{digit}.png",image)
+    #     count+=1
+    #     cv2.destroyAllWindows()
+    #     print(f"[{i}] Detected Digit:", digit)
+    #     print(f"[{i}] Confidence:", round(confidence, 4))
 
-    return str(hindi_to_english_numbers.get(age)), bin_img

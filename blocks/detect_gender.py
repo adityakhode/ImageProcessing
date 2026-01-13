@@ -31,7 +31,6 @@ def guess_gender(img):
     best_gender = None
 
     for gender, template in TEMPLATES.items():
-        print(img.shape, template.shape)
         score = ssim(img, template)
 
         if score > best_score:

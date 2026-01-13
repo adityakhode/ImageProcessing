@@ -25,8 +25,6 @@ def detect_age(img):
     confidence_score_avg = 0
     for image in (images):
         digit, confidence = detect_digit(resize(image))
-        if confidence < 0.7:
-            return 0, confidence
         confidence_score_avg += confidence
         age = age + str(digit)
     return int(age), confidence_score_avg/2
@@ -46,7 +44,7 @@ def detect_digit(img):
 
 
 if __name__ == "__main__":
-    path = "../data/output/number17.jpg"
+    path = "../data/output/number8.jpg"
     img = cv2.imread(path)
     age = detect_age(img)
     print(age)

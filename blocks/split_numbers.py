@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from crop import crop_age
+from crop import crop_age, cut2cut_crop
 
 STANDARD_SIZE = 64
 
@@ -40,45 +40,6 @@ def preprocess_age_digits(img):
     return binary
 
 
-def cut2cut_crop(img: np.ndarray) -> np.ndarray:
-    """
-    Crops image tightly around black foreground pixels.
-    Works for white background + black text/digits.
-
-    Parameters:
-        img (np.ndarray): Input OpenCV image (BGR or grayscale)
-
-    Returns:
-        np.ndarray: Tightly cropped image
-    """
-
-    if img is None or img.size == 0:
-        raise ValueError("Empty image provided")
-
-    # Convert to grayscale if needed
-    if len(img.shape) == 3:
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    else:
-        gray = img.copy()
-
-    # Binary: black text -> white foreground
-    _, binary = cv2.threshold(
-        gray, 0, 255,
-        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
-    )
-
-    # Find all foreground pixel coordinates
-    coords = cv2.findNonZero(binary)
-
-    # If no foreground detected, return original
-    if coords is None:
-        return img.copy()
-
-    # Bounding box of all foreground pixels
-    x, y, w, h = cv2.boundingRect(coords)
-
-    # Crop original image (preserve color if present)
-    return img[y:y+h, x:x+w]
 
 def resize(img: np.ndarray) -> np.ndarray:
     return cv2.resize(img, (STANDARD_SIZE, STANDARD_SIZE))

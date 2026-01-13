@@ -5,6 +5,7 @@ import time
 import glob
 import numpy as np
 from detect_age import detect_age
+from detect_gender import detect_gender
 from pdf2image import convert_from_path
 from detect_grid import get_grid_from_grey_img
 from extract_grid_coordinates import get_coordinates
@@ -53,15 +54,13 @@ for pdf_name in pdf_files:
 
             crop = cv2.resize(crop, (STANDARD_W, STANDARD_H))
 
-            age, confidence_score = detect_age(crop)
-            print("record_count ", record_count, " age ", age, " confidence_score ", confidence_score)
+            age, age_confidence_score = detect_age(crop)
 
             cv2.putText(crop,str(age),(20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), cv2.LINE_AA)
-            # cv2.imshow("Text", crop)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
-            if confidence_score < 0.7:
-                cv2.imwrite(f"../data/output/number{record_count}.jpg", crop)
+            if age < 21:
+                age = "NULL"
+            gender, gender_confidence_score = detect_gender(crop)
+            print("record_count ", record_count, " age ", age, " Age confidence_score ", age_confidence_score, " Gender ", gender, " Gender confidence_score ", gender_confidence_score)
 
 
 

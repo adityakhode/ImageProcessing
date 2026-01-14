@@ -1,6 +1,13 @@
 import argparse
 from pathlib import Path
 from pdf2image import convert_from_path
+    main()
+
+if __name__ == "__main__":
+    main()
+import argparse
+from pathlib import Path
+from pdf2image import convert_from_path
 
 def main():
     parser = argparse.ArgumentParser(description="Convert PDF to images (remove first & last page)")

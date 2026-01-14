@@ -178,6 +178,29 @@ class DETECT_GRID:
         output_path = os.path.join(img_path, filename)
         cv2.imwrite(output_path, np_img)
 
+
+def process_img(img_path: str) -> str:
+    """Compatibility helper used by `Run_taskflow.py`.
+
+    Reads `img_path`, runs grid detection, saves the detected grid image
+    to `../data/output/detected_grid_<basename>.jpg` and returns the
+    saved path. Raises FileNotFoundError on missing input.
+    """
+    if not os.path.exists(img_path):
+        raise FileNotFoundError(f"Image not found: {img_path}")
+
+    detector = DETECT_GRID()
+    grey = detector.get_grey_cv2_img(img_path)
+    grid = detector.get_grid_from_grey_img(grey)
+
+    out_dir = os.path.join("..", "data", "output")
+    os.makedirs(out_dir, exist_ok=True)
+    base = os.path.splitext(os.path.basename(img_path))[0]
+    out_name = f"detected_grid_{base}.jpg"
+    out_path = os.path.join(out_dir, out_name)
+    detector.save_image(out_dir, out_name, grid)
+    return out_path
+
 if __name__ == "__main__":
     img_path = "../data/BoothVoterList_A4_Ward_9_Booth_1_img001.jpg"
 

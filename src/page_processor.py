@@ -49,7 +49,10 @@ def process_page(page_data):
                 
                 # Detect age
                 age, age_conf = detect_age(voter_block)
-                age = "NULL" if age < MIN_AGE_THRESHOLD else age
+                if age is None or (isinstance(age, int) and age < MIN_AGE_THRESHOLD):
+                    age_val = "NULL"
+                else:
+                    age_val = age
                 
                 # Detect gender
                 gender, gender_conf = detect_gender(voter_block)
@@ -59,7 +62,7 @@ def process_page(page_data):
                     "pdf_name": pdf_name,
                     "page_num": page_num,
                     "block_id": block_id,
-                    "age": age,
+                    "age": age_val,
                     "age_confidence": round(age_conf, 4),
                     "gender": gender,
                     "gender_confidence": round(gender_conf, 4)

@@ -1,63 +1,39 @@
+"""Compatibility wrapper around the newer age detection service.
+
+This module keeps the legacy function `detect_age(img)` while delegating
+the actual work to `age_service.AgeDetector`. The wrapper constructs a
+default detector on first use so existing callers do not need to change.
+"""
+
+from typing import Tuple
 import cv2
-import os
-from split_numbers import split_img, resize
-from skimage.metrics import structural_similarity as ssim
 
-TEMPLATE_DIR = "../digits/templates/"
-STANDARD_SIZE = 64   # single int is easier for centering
+from age_service import build_default_detector, AgeDetectionResult
 
-def load_templates():
-    templates = {}
-    for i in range(10):
-        path = os.path.join(TEMPLATE_DIR, f"{i}.png")
-        img = cv2.imread(path, cv2.IMREAD_GRAYSCALE) 
-        if img is None:
-            raise RuntimeError(f"Template missing: {path}")
-        templates[i] = img
-    return templates
 
-TEMPLATES = load_templates()
+_DEFAULT_DETECTOR = None
 
-def detect_age(img):
-    age = ""
 
-    images = split_img(img)
-    confidence_score_avg = 0
-    for image in (images):
-        digit, confidence = detect_digit(resize(image))
-        confidence_score_avg += confidence
-        age = age + str(digit)
-    return int(age), confidence_score_avg/2
+def _get_default_detector():
+    global _DEFAULT_DETECTOR
+    if _DEFAULT_DETECTOR is None:
+        _DEFAULT_DETECTOR = build_default_detector()
+    return _DEFAULT_DETECTOR
 
-def detect_digit(img):
-    best_score = -1
-    best_digit = None
 
-    for digit, template in TEMPLATES.items():
-        score = ssim(img, template)
+def detect_age(img) -> Tuple[int, float]:
+    """Detect age from a cropped voter block image.
 
-        if score > best_score:
-            best_score = score
-            best_digit = digit
-
-    return best_digit, best_score
+    Returns a tuple `(age:int, confidence:float)`. If detection fails,
+    `age` may be `None` or raise a ValueError for invalid inputs.
+    """
+    detector = _get_default_detector()
+    result: AgeDetectionResult = detector.detect(img)
+    return result.age, result.confidence
 
 
 if __name__ == "__main__":
     path = "../data/output/number8.jpg"
     img = cv2.imread(path)
-    age = detect_age(img)
-    print(age)
-    # images = detect_age(img)
-    
-    # count = 0
-    # for i, image in enumerate(images):
-    #     digit, confidence = detect_digit(image)
-    #     cv2.imshow(f"{digit}", image)
-    #     cv2.waitKey(3000)
-    #     cv2.imwrite(f"../data/output/{digit}.png",image)
-    #     count+=1
-    #     cv2.destroyAllWindows()
-    #     print(f"[{i}] Detected Digit:", digit)
-    #     print(f"[{i}] Confidence:", round(confidence, 4))
+    print(detect_age(img))
 

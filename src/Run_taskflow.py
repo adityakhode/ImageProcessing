@@ -1,8 +1,9 @@
-import glob
-from multiprocessing import Pool, cpu_count
 import os
-from detect_grid import process_img
+import glob
 import time
+from detect_grid import process_img
+from multiprocessing import Pool, cpu_count
+
 if __name__ == "__main__":
     start_time = time.time()
     images = sorted(glob.glob("../data/*.jpg"))

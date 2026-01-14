@@ -5,9 +5,8 @@ the actual work to `age_service.AgeDetector`. The wrapper constructs a
 default detector on first use so existing callers do not need to change.
 """
 
-from typing import Tuple
 import cv2
-
+from typing import Tuple
 from age_service import build_default_detector, AgeDetectionResult
 
 

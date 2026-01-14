@@ -4,11 +4,10 @@ Expose `detect_gender(img) -> (gender, confidence)` and delegate
 the implementation to `gender_service.GenderDetector`.
 """
 
-from typing import Tuple, Optional
 import cv2
-
-from gender_service import build_default_gender_detector, GenderDetectionResult
+from typing import Tuple, Optional
 from crop import crop_gender, cut2cut_crop
+from gender_service import build_default_gender_detector, GenderDetectionResult
 
 
 _DEFAULT_GENDER_DETECTOR = None

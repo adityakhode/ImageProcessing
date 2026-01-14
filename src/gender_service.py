@@ -1,9 +1,8 @@
-from dataclasses import dataclass
-from typing import Optional
 import numpy as np
-
-from gender_templates import load_gender_templates
+from typing import Optional
+from dataclasses import dataclass
 from gender_matcher import SSIMGenderMatcher
+from gender_templates import load_gender_templates
 
 
 @dataclass

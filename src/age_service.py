@@ -1,10 +1,9 @@
-from dataclasses import dataclass
-from typing import Optional, List, Tuple
 import numpy as np
-
-from digit_matcher import DigitMatcher, SSIMMatcher
-from digit_templates import load_templates
+from dataclasses import dataclass
 from split_numbers import split_img
+from typing import Optional, List, Tuple
+from digit_templates import load_templates
+from digit_matcher import DigitMatcher, SSIMMatcher
 
 
 @dataclass

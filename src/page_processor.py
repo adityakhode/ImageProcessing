@@ -1,9 +1,10 @@
 import numpy as np
 from detect_age import detect_age
-from detect_gender import detect_gender
 from detect_grid import DETECT_GRID
-from extract_grid_coordinates import get_coordinates
 from config import MIN_AGE_THRESHOLD
+from detect_gender import detect_gender
+from extract_grid_coordinates import get_coordinates
+
 
 def process_page(page_data):
     """

@@ -1,12 +1,12 @@
 import os
+import re
+import csv
 import glob
 import time
-import csv
-import re
 import argparse
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from pdf2image import convert_from_path
 from page_processor import process_page
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from config import (
     PDF_DIRS, OUTPUT_DIR, DPI, SKIP_FIRST_PAGE, SKIP_LAST_PAGE,
     NUM_WORKERS, MAX_WORKERS_CAP, ENABLE_CSV_EXPORT, CSV_FILENAME

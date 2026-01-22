@@ -20,7 +20,7 @@ class TASKFLOW:
     
     def __init__(self):
         self.pdf_files = sorted(glob.glob(os.path.join(PDF_DIRS, "*.pdf")))
-        self.num_workers = min(NUM_WORKERS + 1, MAX_WORKERS_CAP)
+        self.num_workers = min(NUM_WORKERS, MAX_WORKERS_CAP)
         self.all_results = []
         self.metadata_defaults = {
             "epic_id": None,

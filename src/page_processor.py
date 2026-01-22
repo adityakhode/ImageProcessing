@@ -3,6 +3,8 @@ from detect_age import detect_age
 from detect_grid import DETECT_GRID
 from config import MIN_AGE_THRESHOLD
 from detect_gender import detect_gender
+from detect_sr_no import extract_numbers
+from detect_epic_id import extract_epic_id
 from extract_grid_coordinates import get_coordinates
 
 
@@ -58,11 +60,18 @@ def process_page(page_data):
                 # Detect gender
                 gender, gender_conf = detect_gender(voter_block)
                 
+                # Detect SR NO
+                sr_no = extract_numbers(voter_block)
+
+                # Detect epic id
+                epic_id = extract_epic_id(voter_block)   
+
                 # Collect result
                 results.append({
                     "pdf_name": pdf_name,
                     "page_num": page_num,
                     "block_id": block_id,
+                    "sr_no": sr_no,
                     "age": age_val,
                     "age_confidence": round(age_conf, 4),
                     "gender": gender,

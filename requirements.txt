@@ -6,3 +6,4 @@ pillow
 scikit-image
 pdf2image
 matplotlib
+pytesseract

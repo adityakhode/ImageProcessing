@@ -1,4 +1,5 @@
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 from detect_age import detect_age
 from detect_grid import DETECT_GRID
 from config import MIN_AGE_THRESHOLD
@@ -50,21 +51,25 @@ def process_page(page_data):
                 # Crop voter block
                 voter_block = original_page[y1:y2, x1:x2]
                 
-                # Detect age
-                age, age_conf = detect_age(voter_block)
+                # OPTIMIZATION: Run independent detections in parallel
+                # Age, Gender, SR No, and Epic ID are independent operations
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    age_future = executor.submit(detect_age, voter_block)
+                    gender_future = executor.submit(detect_gender, voter_block)
+                    sr_no_future = executor.submit(extract_numbers, voter_block)
+                    epic_id_future = executor.submit(extract_epic_id, voter_block)
+                    
+                    # Collect results
+                    age, age_conf = age_future.result()
+                    gender, gender_conf = gender_future.result()
+                    sr_no = sr_no_future.result()
+                    epic_id = epic_id_future.result()
+                
+                # Process age result
                 if age is None or (isinstance(age, int) and age < MIN_AGE_THRESHOLD):
                     age_val = "NULL"
                 else:
                     age_val = age
-                
-                # Detect gender
-                gender, gender_conf = detect_gender(voter_block)
-                
-                # Detect SR NO
-                sr_no = extract_numbers(voter_block)
-
-                # Detect epic id
-                epic_id = extract_epic_id(voter_block)   
 
                 # Collect result
                 results.append({

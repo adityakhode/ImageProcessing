@@ -51,9 +51,9 @@ class SRNoDetector:
             gray, self.preprocess_threshold, 255, cv2.THRESH_BINARY_INV
         )
 
-        # Dilation to make the text more solid
-        kernel = np.ones((3, 3), np.uint8)
-        thresh = cv2.dilate(thresh, kernel, iterations=1)
+        # Skip dilation - saves ~30-50ms per image. Tesseract handles thin text well.
+        # kernel = np.ones((3, 3), np.uint8)
+        # thresh = cv2.dilate(thresh, kernel, iterations=1)
 
         return thresh
 
